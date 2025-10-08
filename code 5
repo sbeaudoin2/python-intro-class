@@ -1,0 +1,35 @@
+import math
+def calculate_sample_size(z,p,e):
+    return(math.ceil(z**2*p*(1-p)/e**2))
+print (calculate_sample_size(1.96,0.5,0.05))
+
+#Define input variables
+population_size = int(input("Enter population size:"))
+confidence_level = int(input("Enter confidence level (e.g. 90, 95,99):"))
+margin_of_error = float(input("Enter desired margin of error(e.g. 0.05 for 5%):"))
+
+if confidence_level == 90:
+    z = 1.65
+elif confidence_level == 95:
+    z = 1.96
+elif confidence_level == 99:
+    z = 2.58
+else: print ("Error. For margin of error just enter 90, 95, 99.")
+
+required_sample_size = calculate_sample_size(z, 0.5, margin_of_error)
+print(f"\n The required sample size for systemic sampling is approzimately {required_sample_size}.\n")
+while True:
+    desired = int(input("Enter the sample size you want to draw: "))
+    if desired > required_sample_size:
+        print("\n Sorry, the requested sample size is {required_sample_size}. Please enter a lower value \n")
+    else: break 
+
+population = list(range(1, population_size))
+interval = (round(population_size/desired))
+sample = []
+idx = 0
+
+while idx < population_size and len (sample) < desired:
+    sample.append(population[idx])
+    idx += interval 
+print (sample)
