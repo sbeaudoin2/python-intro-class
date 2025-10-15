@@ -1,0 +1,68 @@
+data_points = [
+    (2000, 72.5),
+    (2001, 73.1),
+    (2002, 73.8),
+    (2003,74.2),
+    (2004, 74.7),
+    (2005, 75.3),
+    (2006, 75.9),
+    (2007, 76.5),
+    (2008, 76.9),
+    (2009, 77.4),
+    (2010, 78.0),
+    (2011, 78.5),
+    (2012, 79.0),
+    (2013, 79.5),
+    (2014, 80.0),
+    (2015, 80.5),
+    (2016, 81.0),
+    (2017, 81.5),
+    (2018, 82.0),
+    (2019, 82.5)
+
+]
+
+# Function 1 - Calculate Mean:
+# Write a function calcukate_mean(data) that makes a list of numbers as input and returns the mean (average) value.
+
+def calculate_mean(data):
+    return sum(data)/len(data)
+#Double check your function
+print(calculate_mean([10,20,30,60]))
+
+#Function 2 - Calculate intercept and Slope
+
+def calculate_regression_coefficients(data_points):
+    x_values = [x for x, _ in data_points]
+    y_values = [y for _, y in data_points]
+    
+    x_mean = calculate_mean(x_values)
+    y_mean = calculate_mean(y_values)
+    
+    numerator = sum((x-x_mean)*(y - y_mean) for x,y in data_points)
+    denominator = sum((x-x_mean)**2 for x in x_values)
+    
+    slope = numerator/denominator
+    intercept = y_mean - slope*x_mean
+    
+    return intercept, slope
+
+#Double checking Function 2 
+print(calculate_regression_coefficients(data_points))
+      
+#Function 3 
+def make_predictions(x_value, intercept, slope):
+    return (slope*x_value) + intercept 
+
+#Double checking Function 3 
+    print(make_predictions(2009, -971.53, 0.52))
+    
+slope, intercept = calculate_regression_coefficients(data_points)
+print("Regression Coefficients: ")
+print("Slope (m): ", slope)
+print("Intercept (b): ", intercept)
+
+x_new = float(input("Enter a new year value for prediction:"))
+y_pred = make_predictions(x_new, slope, intercept)
+
+print(f"Predicted y value for x = {x_new}: {y_pred}")
