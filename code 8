@@ -1,0 +1,17 @@
+data_list = [('apple' , 5), ('banana' , 2), ('orange' , 3), ('grapes' , 3), ('pineapple' , 1)]
+#Create a dictionary with loop
+data_dict = {}
+for key,value in data_list: 
+    data_dict[key] = value
+print (data_dict)
+#Create a dictionary with a loop and a function
+def convert_to_dictionary(data_list):
+    dictionary = {}
+    for key, value in data_list:
+        dictionary[key] = value
+        
+        print("Original list of tuples:" , data_list)
+        print("Converted dictionary:" , dictionary)
+        return dictionary 
+    
+converted_dict = convert_to_dictionary(data_list)
