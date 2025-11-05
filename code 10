@@ -1,0 +1,64 @@
+# Step 1 - Import packages
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+
+# Step 2 - Define dataset and load into pandas DataFrame
+data = { 'Age': [25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100],
+
+    'BloodPressure': [120, 122, 126, 128, 130, 133, 135, 138, 142, 145, 150, 155, 160, 165, 170, 175]
+    }
+df = pd.DataFrame (data)
+df.head()
+
+#Step 3 - Basic data exploration
+print("Shape (rows,columns):", df.shape)
+print("\nColumn types:")
+print(df.dtypes)
+print("\nMissing values per column:")
+print(df.isnull().sum())
+print("\nSummary statistics:")
+print(df.describe())
+
+#Step 4 - Scatter plot (Age vs BloodPressure)
+plt.figure(figsize=(7, 5 ))
+plt.scatter(df['Age'], df['BloodPressure'], label='Patient Data')
+plt.xlabel("Age (years)")
+plt.ylabel("Blood Pressure (mmHg)")
+plt.title("Age vs Blood Pressure - Scatter Plot")
+plt.grid(True)
+plt.legend()
+plt.show()
+
+#Step 5 - Prepare data for regression
+X = df[['Age']]
+y = df['BloodPressure']
+
+model = LinearRegression()
+model.fit(X,y)
+
+slope = model.coef_[0]
+intercept = model.intercept_
+print(f"Regression Equation: BloodPressure = {slope:4f} * Age + {intercept:.4f}")
+
+#Step 6 - Plot regression line on top of scatter plot
+plt.figure(figsize=(7,5))
+plt.scatter(df['Age'], df['BloodPressure'], label ='Patient Data')
+
+y_hat = model.predict(X)
+plt.plot(df['Age'], y_hat, label='Regression Line')
+
+plt.xlabel("Age (years)")
+plt.ylabel("Blood Pressure (mmHg")
+plt.title("Linear Regression Fit - Age -> Blood Pressure")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+#Step 7 - Make Predictions for new ages
+example_ages = [[30], [40], [50], [60]]
+predicted_bp = model.predict(example_ages)
+
+for (age,), bp in zip(example_ages, predicted_bp):
+    print(f"Predicted Blood Pressure at Age {age}: {bp:.2f} mmHg")
+    
