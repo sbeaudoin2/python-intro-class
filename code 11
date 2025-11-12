@@ -1,0 +1,88 @@
+#Step 1 - Import necessary modules
+import statistics as stats
+#Step 2 - Read the data file
+#Make sure Week13Assignment. txt is in the same folder as this notebook
+file_path = "Week13Assignment.txt"
+try:
+    with open(file_path, "r") as file:
+        #readlines() loads all lines into a Python list
+        lines = file.readlines()
+        print("File read successfully. Total lines:",len(lines))
+except FileNotFoundError:
+    print(f"File' {file_path} not found. ")
+except IOError:
+    print("An error occurred while reading the file.")
+#Step 3 - Parse the data
+names, ages, genders = [], [], []
+systolic, diastolic, temperatures = []
+#Skip the header line (index 0) and loop over the rest
+for line in lines[1:]:
+    #Remove newline + spaces at ends, then split on comma
+    parts = line.strip().split(",")
+    #Guard: only process lines with the correct number of fields
+    if len(parts) == 5:
+        name = parts[0].strip()
+        age = int(parts[1].strip())     # string -> int
+        gender = parts[2].strip()       
+        bp_str = parts[3].strip()       # e.g. "120/80"
+        temp = float(parts[4].strip())  # string -> float
+#Split blood pressure into systolic/diastolic
+bp_parts = bp_str.split("/")            #["120", "80"]
+sys_val = int(bp_parts[0])
+dia_val = int(bp_parts[1])
+
+#Append to lists
+names.append(name)
+ages.append(age)
+genders.append(gender)
+systolic.append(sys_val)
+diastolic.append(dia_val)
+temperatures.append(temp)
+
+#Quick sanity check
+print("Parsed patients:", names)
+print("Ages:", ages)
+print("Genders:", genders)
+print("Systolic:", systolic)
+print("Diastolic", diastolic)
+print("Temperatures:", temperatures)
+#Step 4 - Compute Statistics
+#Average age (rounded to 2 decimal places)
+avg_age = round(stats.mean(ages), 2)
+#Count male and female patients
+male_count = genders.count("Male")
+female_count = genders.count("Female")
+#Highest and lowest blood pressure (by systolic value)
+max_index = systolic.index(max(systolic))
+min_index = systolic.index(min(systolic))
+
+highest_bp = f"{systolic[max_index]}/{diastolic[max_index]}"
+lowest_bp = f"{systolic[min_index]}/{diastolic[min_index]}"
+
+#Average body temperature 
+avg_temp = round(stats.mean(temperatures), 2)
+
+#Step 5 - Display results
+print("--Patient Data Statistics --")
+print(f"AverageAge: {avg_age}")
+print(f"MalePatients: {male_count}")
+print(f"FemalePatients: {female_count}")
+print(f"HighestBloodPressure: {highest_bp}")
+print(f"LowestBloodPressure: {lowest_bp}")
+print(f"AverageTemperature: {avg_temp}")
+
+#Step 6 - Write results to output file
+
+output_path = "Week13_Output.txt"
+try:
+    with open(output_path, "w") as out:
+        out.write("-- Patient Data Statistics --\n")
+        out.write(f"AverageAge: {avg_age}\n")
+        out.write(f"MalePatients: {male_count}\n")
+        out.write(f"FemalePatients: {female_count}\n")
+        out.write(f"HighestBloodPressure: {highest_bp}\n")
+        out.write(f"LowestBloodPressure: {lowest_bp}\n")
+        out.write(f"AveragerTemperature: {avg_temp}\n")
+    print(f"nOutput successfully written to '{output_path}'.")
+exceptIOError:
+    print("An error occurred while writing the file.")
