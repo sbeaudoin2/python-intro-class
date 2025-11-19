@@ -1,0 +1,112 @@
+#Step 1 - Import required packages
+import pandas as pd              #Data handling
+import numpy as np               #Numerical operations
+import matplotlib.pyplot as plt  #Visualization
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import classification_report, confusion_matrix
+
+#Step 2 - Load the hospital patient data
+#Make sure 'Week14Assignment.txt' is in the same folder'
+file_path = "Week14Assignment.txt"
+
+try:
+    data = pd.read_csv(file_path)
+    print("File loaded successfully!\n")
+    print(data.head())
+except FileNotFoundError:
+    print(f"Error: ' {file_path}' not found. Check the filename and path.")
+except Exception as e:
+    print("An error occurred while reading the file:", e)
+#Step 3 - Basic descriptive Statistics
+#Number of patients readmitted (Readmission == 1)
+num_readmitted = data[" Readmission"].sum()
+
+#Average satisfaction scores for each category 
+avg_staff = data[" StaffSatisfaction"].mean()
+avg_clean = data[" CleanlinessSatisfaction"].mean()
+avg_food = data[" FoodSatisfaction"].mean()
+avg_comfort = data[" ComfortSatisfaction"].mean()
+avg_comm = data[" CommunicationSatisfaction"].mean()
+
+print("-- Patient Satisfaction Summary --")
+print(f"Number of Patients Readmitted: {num_readmitted}")
+print(f"Average Staff Satisfaction: {avg_staff:.2f}")
+print(f"Average Cleanliness Satisfaction: {avg_clean:.2f}")
+print(f"Average Food Satisfaction: {avg_food:.2f}")
+print(f"Average Comfort Satisfaction: {avg_comfort:.2f}")
+print(f"Average Communication Satisfaction: {avg_comm:.2f}")
+
+#Step 4 - Compute an overall satisfaction score
+satisfaction_cols = [
+    " Satisfaction", "CleanlinessSatisfaction",
+    " FoodSatisfaction", "ComfortSatisfaction"
+    " CommunicationSatisfaction"
+    ]
+#Mean across the five satisfaction columns per patient 
+data["OverallSatisfaction"] = data[satisfaction_cols].mean(axis=1)
+
+data[["PatientID", "OverallSatisfaction", " Readmission"]].head()
+
+#Step 5 - Logistic regression modeling
+
+#Predictor X = OverallSatisfaction (must be 2D array)
+X = data[["OverallSatisfaction"]].values
+#Outcome y = Readmission (0/1)
+y = data["Readmission"].values
+
+#Standardize X for stability 
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+#Create and fit logistic regression model
+log_reg = LogisticRegression()
+log_reg.fit(X_scaled, y)
+
+coef = log_reg.coef_[0][0]
+intercept = log_reg.intercept_[0]
+
+print("--Logistic Regression Coefficients --")
+print(f"Intercept: {intercept:. 3f}")
+print(f"Coefficient for Overall Satisfaction: {coef:. 3f}")
+
+if coef < 0:
+    direction = "Higher satisfaction is associated with LOWER probability of readmission."
+elif coef > 0:
+    direction = "Higher satisfaction is associated with HIGHER probability of readmission."
+else:
+    direction = "No apparent association between satisfaction and readmission."
+
+print("\nInterpretation:")
+print(direction)
+
+#Step 6 - Visualize data and logistic regression curve
+
+#Create a smooth range of satisfaction values for plotting
+x_range = np.linspace(data["OverallSatisfaction"].min(),
+                      data["OverallSatisfaction"].max(), 100).reshape(-1, 1)
+x_range_scaled = scaler.transform(x_range)
+y_prob = log_reg.predict_proba(x_range_scaled)[:, 1] #P(Readmission = 1)
+
+plt.figure(figsize=(8,5))
+#Scatter plot of observed data (0/1)
+plt.scatter(data["OverallSatisfaction"], data[" Readmission"],
+            label="Observed Data", alpha=0.7)
+#Logistic regression curve
+plt.plot(x_range, y_prob, label="logistic Regression Curve", linewidth=2)
+
+plt.xlabel("Overall Satisfaction")
+plt.ylabel("Probability of Readmission (1 = Yes)")
+plt.title("Logistic Regression: Readmission vs Overall Satisfaction")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+#Step 7 - Model evaluation summary
+
+y_pred = log_reg.predict(X_scaled)
+print(classification_report(y, y_pred, zero_division=0))
+
+print("-- Confusion Matrix --")
+print(confusion_matrix(y, y_pred))
