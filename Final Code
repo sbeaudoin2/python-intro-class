@@ -1,0 +1,143 @@
+# ---------------------------------------------------------
+#   Hospital Comparison Assignment
+#   Reads Hospital1.txt and Hospital2.txt
+#   Computes statistics, logistic regression, and plots
+# ---------------------------------------------------------
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+
+# ---------------------------------------------------------
+#   Function to analyze a hospital dataset
+# ---------------------------------------------------------
+
+def analyze_hospital(data, hospital_name):
+
+    print(f"\n{hospital_name} Data Analysis:")
+    print("-" * 30)
+
+    # Basic statistics
+    num_readmitted = data["Readmission"].sum()
+
+    avg_staff = data["StaffSatisfaction"].mean()
+    avg_clean = data["CleanlinessSatisfaction"].mean()
+    avg_food = data["FoodSatisfaction"].mean()
+    avg_comfort = data["ComfortSatisfaction"].mean()
+    avg_comm = data["CommunicationSatisfaction"].mean()
+
+    print(f"Number of Patients Readmitted: {num_readmitted}")
+    print(f"Average Staff Satisfaction: {avg_staff:.2f}")
+    print(f"Average Cleanliness Satisfaction: {avg_clean:.2f}")
+    print(f"Average Food Satisfaction: {avg_food:.2f}")
+    print(f"Average Comfort Satisfaction: {avg_comfort:.2f}")
+    print(f"Average Communication Satisfaction: {avg_comm:.2f}")
+
+    # Compute overall satisfaction
+    sat_cols = [
+        "StaffSatisfaction", "CleanlinessSatisfaction", "FoodSatisfaction",
+        "ComfortSatisfaction", "CommunicationSatisfaction"
+    ]
+
+    data["OverallSatisfaction"] = data[sat_cols].mean(axis=1)
+
+    # Logistic Regression
+    X = data[["OverallSatisfaction"]].values
+    y = data["Readmission"].values
+
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    model = LogisticRegression()
+    model.fit(X_scaled, y)
+
+    coef = model.coef_[0][0]
+    intercept = model.intercept_[0]
+
+    print("\nLogistic Regression Results:")
+    print("----------------------------")
+    print(f"Intercept: {intercept:.3f}")
+    print(f"Coefficient: {coef:.3f}")
+
+    if coef < 0:
+        interpret = "Higher satisfaction is associated with LOWER probability of readmission"
+    elif coef > 0:
+        interpret = "Higher satisfaction is associated with HIGHER probability of readmission"
+    else:
+        interpret = "No correlation between satisfaction and readmission"
+
+    print(f"Interpretation: {interpret}")
+
+    # Plot
+    x_range = np.linspace(data["OverallSatisfaction"].min(),
+                          data["OverallSatisfaction"].max(), 100).reshape(-1,1)
+
+    x_range_scaled = scaler.transform(x_range)
+    y_prob = model.predict_proba(x_range_scaled)[:,1]
+
+    plt.figure(figsize=(8,5))
+    plt.scatter(data["OverallSatisfaction"], y, label="Patient Data", alpha=0.6)
+    plt.plot(x_range, y_prob, linewidth=2, label="Logistic Regression Curve")
+
+    plt.title(f"Logistic Regression for {hospital_name}")
+    plt.xlabel("Overall Satisfaction")
+    plt.ylabel("Probability of Readmission")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+    return {
+        "hospital": hospital_name,
+        "num_readmitted": num_readmitted,
+        "avg_staff": avg_staff,
+        "avg_clean": avg_clean,
+        "avg_food": avg_food,
+        "avg_comfort": avg_comfort,
+        "avg_comm": avg_comm,
+        "coef": coef
+    }
+
+# ---------------------------------------------------------
+#   Load both hospital datasets
+# ---------------------------------------------------------
+
+hosp1 = pd.read_csv("Hospital1.txt")
+hosp1.columns = hosp1.columns.str.strip()
+hosp2 = pd.read_csv("Hospital2.txt")
+hosp2.columns = hosp2.columns.str.strip()
+
+# ---------------------------------------------------------
+#   Analyze each hospital
+# ---------------------------------------------------------
+results1 = analyze_hospital(hosp1, "Hospital 1")
+results2 = analyze_hospital(hosp2, "Hospital 2")
+
+# ---------------------------------------------------------
+#   Final comparison
+# ---------------------------------------------------------
+
+print("\n\nHospital Comparison:")
+print("--------------------")
+
+print(f"Hospital 1 readmissions: {results1['num_readmitted']}")
+print(f"Hospital 2 readmissions: {results2['num_readmitted']}")
+
+if results1["coef"] < results2["coef"]:
+    print("Hospital 1 shows a stronger (more negative) correlation → better performance.")
+elif results1["coef"] > results2["coef"]:
+    print("Hospital 2 shows a stronger (more negative) correlation → better performance.")
+else:
+    print("Both hospitals show similar correlation patterns.")
+
+print("\nConclusion:")
+if results1["num_readmitted"] < results2["num_readmitted"]:
+    print("Hospital 1 has fewer readmissions.")
+elif results1["num_readmitted"] > results2["num_readmitted"]:
+    print("Hospital 2 has fewer readmissions.")
+else:
+    print("Both hospitals have the same readmission count.")
+
+print("\nComparison complete.")
